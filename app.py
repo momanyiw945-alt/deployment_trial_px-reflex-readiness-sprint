@@ -2,15 +2,19 @@
 Reflex — Flask backend
 Member 4 owns this file. Run with: python app.py
 """
-
 from flask import Flask, render_template, request, jsonify
 import models
 
 app = Flask(__name__)
 
+# Initialize the database as soon as the app module loads.
+# This runs both when you do `python app.py` locally AND when
+# a production server like gunicorn imports this file — gunicorn
+# never executes the `if __name__ == "__main__":` block below.
+models.init_db()
+
 # Order status must move through, one step at a time, no skipping.
 STATUS_ORDER = ["PENDING", "ASSIGNED", "PICKED_UP", "DELIVERED"]
-
 
 # ---------------------------------------------------------------------------
 # Page routes (render the HTML each persona sees)
@@ -20,21 +24,17 @@ STATUS_ORDER = ["PENDING", "ASSIGNED", "PICKED_UP", "DELIVERED"]
 def home():
     return render_template("home.html")
 
-
 @app.route("/retailer")
 def retailer_page():
     return render_template("retailer.html")
-
 
 @app.route("/dispatcher")
 def dispatcher_page():
     return render_template("dispatcher.html")
 
-
 @app.route("/rider")
 def rider_page():
     return render_template("rider.html")
-
 
 # ---------------------------------------------------------------------------
 # API routes (the frozen Day 1 contract)
@@ -48,14 +48,12 @@ def get_deliveries():
     deliveries = models.get_all_deliveries(status=status_filter, rider_id=rider_id_filter)
     return jsonify(deliveries)
 
-
 @app.route("/deliveries/<int:delivery_id>", methods=["GET"])
 def get_delivery(delivery_id):
     delivery = models.get_delivery(delivery_id)
     if delivery is None:
         return jsonify({"error": "Delivery not found"}), 404
     return jsonify(delivery)
-
 
 @app.route("/deliveries", methods=["POST"])
 def create_delivery():
@@ -73,11 +71,9 @@ def create_delivery():
     )
     return jsonify(delivery), 201
 
-
 @app.route("/riders", methods=["GET"])
 def get_riders():
     return jsonify(models.get_all_riders())
-
 
 @app.route("/deliveries/<int:delivery_id>/assign", methods=["POST"])
 def assign_delivery(delivery_id):
@@ -98,7 +94,6 @@ def assign_delivery(delivery_id):
 
     updated = models.assign_rider(delivery_id, rider_id)
     return jsonify(updated)
-
 
 @app.route("/deliveries/<int:delivery_id>/status", methods=["PATCH"])
 def update_status(delivery_id):
@@ -133,7 +128,5 @@ def update_status(delivery_id):
     updated = models.update_status(delivery_id, new_status)
     return jsonify(updated)
 
-
 if __name__ == "__main__":
-    models.init_db()
     app.run(debug=True)
