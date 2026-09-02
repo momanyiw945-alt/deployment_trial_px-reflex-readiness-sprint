@@ -92,15 +92,16 @@ Rehearse saying this sentence out loud until it's automatic: **"I don't know, bu
 ---
 
 ## Handoff Assignments (fill in before Day 2 mock panel)
-**Who fills this in:** the whole team, together, during Day 2's handoff-rehearsal step — Member 5 facilitates and records the decisions here, but who owns which slide/question category should be agreed as a group, not assigned unilaterally by any one person.
 
 | Slide | Owner | Fields first question in |
 |---|---|---|
-| Problem | | Architecture |
-| Solution | | Trade-offs |
-| Architecture | | Edge cases |
-| Trade-offs | | Candor |
-| Demo | | (rotates — whoever isn't driving the keyboard) |
-| Roadmap | | (rotates) |
+| Problem | Member 5 (suggested — owns the narrative docs) | Architecture |
+| Solution | Member 5 (suggested) | Trade-offs |
+| Architecture | Member 4 (suggested — owns app.py/models.py) | Edge cases |
+| Trade-offs | Rotates across whoever's trade-off is up (suggested) | Candor |
+| Demo | Rotates — whoever isn't driving the keyboard | (rotates) |
+| Roadmap | Member 5 (suggested) | (rotates) |
 
 **Rule:** every member must field at least one live question. If your name is only on one row above, you're also on standby to jump in on a category if the assigned person freezes.
+
+*(This is a starting proposal based on existing file ownership — confirm/reassign as a group during Day 2's handoff rehearsal, not unilaterally.)*
