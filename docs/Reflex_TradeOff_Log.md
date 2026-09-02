@@ -60,6 +60,17 @@ Fill in the bracketed sections once Day 1's build is final. The five candidates 
 
 ---
 
+### Trade-off 6 — SQLite on ephemeral storage (no data persistence across deploys/restarts)
+**Owner:** Member 5
+
+**What it is:** The app stores all data in a single SQLite file (`reflex.db`) written to local disk inside the running container. On our chosen host (Render, free tier), that disk is wiped every time the service redeploys, or spins down from inactivity and restarts. We confirmed this directly: after a fresh deploy, hitting `/riders` immediately returned the 3 seeded riders (Brian, Kevin, James) with no manual setup — proof the database is being recreated from scratch each time, not persisted from a prior run. Any deliveries created between deploys are lost.
+
+**Acceptable because:** SQLite required zero extra infrastructure to stand up — no separate database service, no connection strings, no migrations — so the team could spend the sprint on the actual delivery-tracking logic the brief is graded on, not on provisioning a database. For proving the request → assignment → status flow works end-to-end in a live demo, losing data on redeploy has no visible cost — we control when redeploys happen, and the demo script re-seeds the same 3 riders every time regardless.
+
+**What we'd do with more time:** Migrate to a managed Postgres instance (available natively on the same host) and swap the `sqlite3` calls in `models.py` for a proper DB driver/ORM. This also matters beyond just persistence: SQLite's file-level locking means it can't safely handle multiple concurrent writers, so it would block us from ever running more than one instance of the app — Postgres removes that ceiling too.
+
+---
+
 ## Cross-check before submitting
 - [ ] At least 3 trade-offs listed (brief's minimum)
 - [ ] Each has all three parts filled in — what it is / why accepted / what we'd change
