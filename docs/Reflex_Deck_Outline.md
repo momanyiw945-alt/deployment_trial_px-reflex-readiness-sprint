@@ -11,7 +11,7 @@ Structure required by the brief: Problem → Solution → Architecture → Trade
 **Content:**
 - Small Kenyan retailers — electronics shops, pharmacies, hardware stores — coordinate deliveries over WhatsApp and phone calls.
 - No record of who's assigned, no status visibility, no proof of delivery.
-- The cost of this: [fill in — e.g. "a retailer has no way to answer 'where is my customer's order' without calling the rider directly"]
+- The cost of this: a retailer has no way to answer "where is my customer's order right now" without manually calling the rider — every status check is a phone call, and there's no record afterward of who confirmed what, or when.
 
 **Visual suggestion:** A simple before/after: messy WhatsApp thread vs. a clean status view.
 
@@ -41,22 +41,24 @@ Structure required by the brief: Problem → Solution → Architecture → Trade
 ---
 
 ## Slide 4 — Architecture
-**One takeaway:** [fill in — e.g. "we kept the stack deliberately simple so every member can defend every layer"]
+**One takeaway:** We kept the stack deliberately simple so every member can defend every layer.
 
 **Content:**
-```
-Web App
-   ↓
-REST API
-   ↓
-Flask Backend
-   ↓
-SQLite Database
-```
-- Frontend: [confirm — plain HTML/CSS/JS via Jinja templates]
+
+Browser (Retailer / Dispatcher / Rider views)
+↓
+Flask (routes + REST API, single app.py)
+↓
+SQLite (single reflex.db file)
+↓
+Deployed on Render — gunicorn serving the Flask app,
+free-tier web service
+
+- Frontend: plain HTML/CSS/JS via Jinja templates — no build step, no frontend framework, deliberately, so the whole team can read and explain every file (direct from our own README, and a real defensible choice, not just a limitation).
 - Backend: Flask
 - Database: SQLite
-- API: REST — [list the 6 endpoints, or summarize: "create, list, assign, and update-status endpoints"]
+- API: REST — create, list, and fetch deliveries; list riders; assign a rider to a delivery; and move a delivery forward exactly one status step (server-side enforced, so the API itself can't be used to skip a step even if someone bypasses the UI).
+- Deployment: Render web service, built via `pip install -r requirements.txt`, started via `gunicorn app:app`.
 
 **Anticipate:** "Why this choice over the obvious alternative?" — see the Architecture section of the S→C→E prep doc for the rehearsed answer.
 
@@ -67,18 +69,25 @@ SQLite Database
 
 **Content:** No text-heavy slide here — this is where you switch to the live app and run the demo script (see `Reflex_Demo_Script_and_SCE_Prep.md`).
 
-**Backup plan line to have ready:** [name who has a backup recording, in case live demo breaks]
+**Live URL:** https://deployment-trial-px-reflex-readiness.onrender.com
+
+**Backup plan line to have ready:** [name who has a backup recording, in case live demo breaks — note: free-tier Render spins down after ~15 min idle, so if the app hasn't been hit recently, the first request can take 50+ seconds to wake up. Hit the URL once a minute or two before presenting to "warm it up," and have the backup recording ready regardless.]
 
 ---
 
 ## Slide 6 — Trade-offs
 **One takeaway:** We know exactly where this system is weak, and why we accepted it anyway.
 
-**Content:** Pull directly from the finalized `Reflex_TradeOff_Log.md` — do not re-write it differently here, use the exact same three (or more) trade-offs so your slide and your written log agree with each other under questioning.
+**Content:** Pull directly from the finalized `Reflex_TradeOff_Log.md` — do not re-write it differently here, use the exact same trade-offs so your slide and your written log agree with each other under questioning.
 
-1. [Trade-off 1 — one line]
-2. [Trade-off 2 — one line]
-3. [Trade-off 3 — one line]
+1. No real authentication — views are open, "becoming" a persona is just a dropdown
+2. No GPS / live location tracking during transit
+3. Polling every 3 seconds instead of real-time sync, with no offline retry
+4. No notification when a delivery is assigned — rider only sees it on next check/poll
+5. No QR/barcode scanning for order confirmation — single button tap instead
+6. SQLite on ephemeral storage — data resets on every redeploy/restart (confirmed live: `/riders` reseeds Brian, Kevin, James fresh on every new deploy)
+
+*(Brief requires a minimum of 3 on the slide — showing all 6 briefly signals we found our own weak points rather than getting caught off guard, per the rubric's "Defense & Cross-Exam" row.)*
 
 ---
 
@@ -86,17 +95,22 @@ SQLite Database
 **One takeaway:** We know what's next, in priority order.
 
 **Content:**
-```
+
 Now
-[what's actually built and working]
+Full request → assign → pick up → deliver loop works end to end,
+deployed and reachable publicly, server-side status validation
+enforced on every API call, not just hidden in the UI.
 
 Next
-[the 2-3 things closest to being built if given more time —
- usually mirrors your trade-offs, e.g. real auth, real-time sync]
+Real role-based authentication per persona
+Move to a managed Postgres database for persistence
+WebSockets/SSE instead of polling, with retry on failed status updates
 
 Later
-[bigger, further-out ideas — analytics, notifications, scaling]
-```
+GPS/live location tracking during transit
+Push/SMS notifications on assignment
+QR/barcode scanning for delivery confirmation
+
 
 ---
 
